@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Baixar Arquivo</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-list>
+
+    <ion-list-header no-lines>
+      <h2>1. Conectar ao Arduino</h2>
+    </ion-list-header>
+
+    <ion-item detail-push>
+      Configurações Bluetooth
+    </ion-item>
+
+    <ion-item>
+      <ion-icon name="alert"></ion-icon>
+      Não conectado
+    </ion-item>
+<ion-item no-lines>
+    <button round outline color="light" (click)="conectarDispositivo();">Conectar ao Arduino</button>
+  </ion-item>
+    <ion-list-header>
+      <h2>2. Obter o arquivo do Arduino</h2>
+    </ion-list-header>
+
+    <ion-item no-lines>
+      <button ion-button color="secondary" (click)="transferirArquivo();">Transferir arquivo</button>
+    </ion-item>
+    <ion-item-divider>
+      <h6>Encerrar conexão</h6>
+    </ion-item-divider>
+    <ion-item>
+      <button ion-button color="danger" (click)="desconectar();">Desconectar</button>
+    </ion-item>
+    <p>{{resultado}}</p>
+  </ion-list>
+</ion-content>
