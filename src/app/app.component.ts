@@ -17,7 +17,7 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 export class MyApp {
   @ViewChild(Nav) nav: Nav;
   
-  rootPage = BaixarArquivoPage;
+  rootPage = MenuPrincipalPage;
   pages: Array<{title: string, component: any}>;
 
   constructor(
@@ -39,7 +39,7 @@ export class MyApp {
     this.platform.ready().then(() => {
       // Okay, so the platform is ready and our plugins are available.
       // Here you can do any higher level native things you might need.
-      this.statusBar.styleDefault();
+      this.statusBar.styleLightContent();
       this.splashScreen.hide();
     });
   }
