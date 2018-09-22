@@ -8,41 +8,72 @@
 </ion-header>
 
 <ion-content padding>
-  <ion-list>
+  <ion-item-group>
 
-    <ion-item no-lines>
-      <h1>Conexão com o Arduino</h1>
-    </ion-item>
+    <ion-item-divider>
+      <b>Conexão com o Arduino</b>
+    </ion-item-divider>
 
-    <ion-item>
-      Status:
-      <ion-icon name="alert"></ion-icon>
-      Não conectado
-    </ion-item>
-
-    <ion-item detail-push>
+    <div *ngIf="!conectadoArduino">
+      <ion-item>
+        <ion-icon item-start name="alert" color="danger"></ion-icon>
+        Status:
+        <ion-note item-end color="danger">
+          Não conectado
+        </ion-note>
+      </ion-item>
+    </div>
+    <div *ngIf="conectadoArduino">
+      <ion-item>
+        <ion-icon item-start name="checkmark-circle" color="secondary"></ion-icon>
+        Status:
+        <ion-note item-end color="secondary">
+          Conectado
+        </ion-note>
+      </ion-item>
+    </div>
+    <button ion-item detail-push>
+      <ion-icon item-start name="bluetooth" color="dark"></ion-icon>
       Configurações Bluetooth
-    </ion-item>
+      <ion-note item-end>
+        Desativado
+      </ion-note>
+    </button>
 
-    <ion-item>
-      <button ion-button large block primary (click)="conectarDispositivo();">Conectar ao Arduino</button>
-    </ion-item>
+    <button ion-item (click)="testeConectarArduino();">
+      <ion-icon item-start name="sync" color="dark"></ion-icon>
+      Conectar ao Arduino
+    </button>
+    <!-- <ion-item>
+    <button ion-button block clear item-end primary (click)="conectarDispositivo();">Conectar ao Arduino</button>
+    </ion-item> -->
 
-    <ion-item>
-      <h1>Obter o arquivo do Arduino</h1>
-    </ion-item>
+    <ion-item-divider>
+      <b>Obter o arquivo do Arduino</b>
+    </ion-item-divider>
 
-    <ion-item>
-      <button ion-button large block color="secondary" (click)="testeSalvaArquivo();">Transferir arquivo</button>
-    </ion-item>
 
-    <ion-item>
-      <h1>Encerrar conexão com Arduino</h1>
-    </ion-item>
+    <button ion-item (click)="testeSalvaArquivo();">
+      <ion-icon item-start name="download" color="dark"></ion-icon>
+      Transferir Arquivo
+    </button>
 
-    <ion-item>
-      <button ion-button large block color="danger" (click)="desconectar();">Desconectar</button>
-    </ion-item>
+    <!-- <ion-item>
+    <button ion-button block color="secondary" (click)="testeSalvaArquivo();">Transferir arquivo</button>
+    </ion-item> -->
+
+    <ion-item-divider>
+      <b>Encerrar conexão com Arduino</b>
+    </ion-item-divider>
+
+    <button ion-item (click)="testeDesconectarArduino();">
+      <ion-icon item-start name="power" color="dark"></ion-icon>
+      Desconectar
+    </button>
+
+    <!-- <ion-item>
+    <button ion-button block color="danger" (click)="testeDesconectarArduino();">Desconectar</button>
+    </ion-item> -->
     <p>{{resultado}}</p>
-  </ion-list>
+  </ion-item-group>
 </ion-content>
