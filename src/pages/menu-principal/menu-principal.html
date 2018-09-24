@@ -9,7 +9,7 @@
 
 <ion-content>
   
-  <ion-card>
+  <ion-card (click)="navegarParaBaixarArquivo();">
     <img padding src="assets/imgs/conexao-arduino.png"/>
     <ion-card-content>
       <ion-card-title>
@@ -22,7 +22,7 @@
     </ion-card-content>
   </ion-card>
 
-  <ion-card>
+  <ion-card (click)="navegarParaVisualizarDados();">
     <img padding src="assets/imgs/exibicao-dados.png"/>
     <ion-card-content>
       <ion-card-title>

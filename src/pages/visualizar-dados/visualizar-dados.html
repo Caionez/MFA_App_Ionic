@@ -10,52 +10,80 @@
 
 <ion-content padding>
 
-  <ion-list>
-    <ion-item>
+  <ion-grid>
+    <ion-row>
       <ion-input placeholder="Caminho do arquivo..."></ion-input>
-    </ion-item>    
-  </ion-list>
-
-<h6>Filtrar dados</h6>
-
-<ion-grid>
-  <ion-row>
-    <ion-col>
-      <ion-item>
-        <ion-label floating>De</ion-label>
-        <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataInicial"></ion-datetime>
-      </ion-item>
-    </ion-col>
-
-    <ion-col>
-      <ion-item>
-        <ion-label floating>Até</ion-label>
-        <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataFinal"></ion-datetime>
-      </ion-item>
-    </ion-col>
-  </ion-row>
-  <ion-row>
-    <ion-col>
-      <button ion-button block (click)="filtrarDados();">
+    </ion-row>
+    <ion-row>
+      <button ion-button block icon-start (click)="filtrarDados();">
         <ion-icon name="search"></ion-icon>
-        Visualizar resultados
+        Ler Arquivo
       </button>
-    </ion-col>
-  </ion-row>
-</ion-grid>
+    </ion-row>
+  </ion-grid>
+
+  <ion-grid *ngIf="dadosLidos">
+    <ion-row>
+      <ion-col>
+        Foram encontrados registros de água no período:
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        De: <b>{{menorDataEncontrada}}</b>
+      </ion-col>
+      <ion-col>
+        Até: <b>{{maiorDataEncontrada}}</b>
+      </ion-col>
+    </ion-row>
+    <ion-row>&nbsp;</ion-row>
+    <ion-row>
+      <button ion-button full clear icon-start color="dark">
+        <ion-icon name="ios-funnel"></ion-icon>        
+          Filtrar dados
+          </button>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-label floating>De</ion-label>
+          <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataInicial"></ion-datetime>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-label floating>Até</ion-label>
+          <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataFinal"></ion-datetime>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <button ion-button block icon-start color="light" (click)="mostrarGrafico('hora');">
+          <ion-icon name="time"></ion-icon>
+          Fluxo por hora
+        </button>
+      </ion-col>
+      <ion-col>
+        <button ion-button block icon-start color="light" (click)="mostrarGrafico('dia');">
+          <ion-icon name="calendar"></ion-icon>
+          Fluxo por dia
+        </button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
   <div>
-      <div style="display: block" *ngIf="lineChartData.length > 0">
-          <canvas baseChart width="400" height="400"
-          [datasets]="lineChartData"
-          [labels]="lineChartLabels"
-          [options]="lineChartOptions"
-          [colors]="lineChartColors"
-          [legend]="lineChartLegend"
-          [chartType]="lineChartType"
-          (chartHover)="chartHovered($event)"
-          (chartClick)="chartClicked($event)"></canvas>
-      </div>
+    <div style="display: block" *ngIf="exibirGraficoHora">
+      <canvas baseChart width="400" height="400" [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions"
+        [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)"
+        (chartClick)="chartClicked($event)"></canvas>
     </div>
+    <div style="display: block" *ngIf="exibirGraficoDia">
+      <canvas baseChart width="400" height="400" [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions"
+        [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)"
+        (chartClick)="chartClicked($event)"></canvas>
+    </div>
+  </div>
 
 </ion-content>

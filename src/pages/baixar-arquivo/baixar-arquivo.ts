@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
-import { ToastController } from 'ionic-angular';
-import { LoadingController } from 'ionic-angular';
+import { NavController, ToastController, LoadingController } from 'ionic-angular';
 
 import { BLE } from '@ionic-native/ble';
 import { File } from '@ionic-native/file';
@@ -16,7 +15,7 @@ export class BaixarArquivoPage {
   streamBluetooth: string;
   conectadoArduino: boolean;
 
-  constructor(public toastCtrl: ToastController, public loadingCtrl: LoadingController) {
+  constructor(public navCtrl: NavController, public toastCtrl: ToastController, public loadingCtrl: LoadingController) {
 
     this.ble = new BLE();
     this.file = new File();
@@ -128,7 +127,7 @@ export class BaixarArquivoPage {
   }
 
   mostrarToast(mensagem: string, duracao: number) {
-    const objToast = this.toastCtrl.create({ message: mensagem, duration: duracao});
+    const objToast = this.toastCtrl.create({ message: mensagem, duration: duracao });
     objToast.present();
   }
 
@@ -136,9 +135,9 @@ export class BaixarArquivoPage {
     const loader = this.loadingCtrl.create({
       content: "Conectando...",
       duration: 2000
-      });
-    loader.present().then(result => {this.conectadoArduino = true;});
-    
+    });
+    loader.present().then(result => { this.conectadoArduino = true; });
+
   }
 
   testeDesconectarArduino() {
@@ -146,6 +145,6 @@ export class BaixarArquivoPage {
       content: "Desconectando...",
       duration: 2000
     });
-    loader.present().then(result => {this.conectadoArduino = false;});    
+    loader.present().then(result => { this.conectadoArduino = false; });
   }
 }
