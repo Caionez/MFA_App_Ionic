@@ -39,9 +39,9 @@
     <ion-row>&nbsp;</ion-row>
     <ion-row>
       <button ion-button full clear icon-start color="dark">
-        <ion-icon name="ios-funnel"></ion-icon>        
-          Filtrar dados
-          </button>
+        <ion-icon name="ios-funnel"></ion-icon>
+        Filtrar dados
+      </button>
     </ion-row>
     <ion-row>
       <ion-col>
@@ -71,19 +71,34 @@
         </button>
       </ion-col>
     </ion-row>
+    <div>
+      <div style="display: block" *ngIf="exibirGraficoHora">
+        <canvas baseChart width="400" height="400" [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions"
+          [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)"
+          (chartClick)="chartClicked($event)"></canvas>
+      </div>
+      <div style="display: block" *ngIf="exibirGraficoDia">
+        <canvas baseChart width="400" height="400" [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions"
+          [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)"
+          (chartClick)="chartClicked($event)"></canvas>
+      </div>
+    </div>
+    <ion-list *ngIf="parametros">
+      <ion-item>
+        <h2><b>Fluxo total no período:</b></h2>
+        <p>{{parametros.fluxoTotal}} litros</p>
+      </ion-item>
+      <ion-item>
+        <h2><b>Maior fluxo: {{parametros.maiorFluxo.valorRegistro}} litros</b></h2>
+        <p>Em: {{parametros.maiorFluxo.dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric',
+          day: 'numeric', hour: '2-digit', minute: '2-digit' })}}</p>
+      </ion-item>
+      <ion-item>
+        <h2><b>Menor fluxo: {{parametros.menorFluxo.valorRegistro}} litros</b></h2>
+        <p>Em {{parametros.menorFluxo.dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric',
+          day: 'numeric', hour: '2-digit', minute: '2-digit' })}}</p>
+      </ion-item>
+    </ion-list>
   </ion-grid>
-
-  <div>
-    <div style="display: block" *ngIf="exibirGraficoHora">
-      <canvas baseChart width="400" height="400" [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions"
-        [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)"
-        (chartClick)="chartClicked($event)"></canvas>
-    </div>
-    <div style="display: block" *ngIf="exibirGraficoDia">
-      <canvas baseChart width="400" height="400" [datasets]="lineChartData" [labels]="lineChartLabels" [options]="lineChartOptions"
-        [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)"
-        (chartClick)="chartClicked($event)"></canvas>
-    </div>
-  </div>
 
 </ion-content>

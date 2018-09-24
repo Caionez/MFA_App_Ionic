@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RegistroAgua, DadosResumidosAgua } from '../../model/registro-agua';
-import { LoadingController, Platform } from 'ionic-angular';
+import { LoadingController, Platform, Loading } from 'ionic-angular';
 
 import { File } from '@ionic-native/file';
 
@@ -21,6 +21,8 @@ export class VisualizarDadosPage {
   dadosPorDia: Array<DadosResumidosAgua>;
   exibirGraficoHora: boolean;
   exibirGraficoDia: boolean;
+
+  parametros: { fluxoTotal: number, maiorFluxo: RegistroAgua, menorFluxo: RegistroAgua };
 
   file = new File();
 
@@ -45,29 +47,17 @@ export class VisualizarDadosPage {
 
     loading.present();
 
-    this.parsearArquivo();
+    this.parsearArquivo(loading);
 
-    loading.setContent('Filtrando os Dados...')
-    this.preencherDadosFiltrados(this.filtro);
-
-    loading.setContent('Montando Gráfico...')
-    //Agrupar por hora (60 minutos)
-    this.dadosPorHora = this.agruparDados(this.dadosFiltrados, 60);
-    //Agrupar por dia (1440 minutos)
-    this.dadosPorDia = this.agruparDados(this.dadosFiltrados, 1440);
-
-    this.dadosLidos = true;
-
-    loading.dismiss();
+    if (this.dadosFiltrados)
+      this.calcularParametros(this.dadosFiltrados)
   }
 
-  parsearArquivo() {
+  parsearArquivo(loading: Loading) {
     let linhasArquivo: String[];
     let colunasArquivo: String[];
     let dataRegistro: Date;
-
     this.dados = new Array<RegistroAgua>();
-
 
     if (this.plataformaCordova) {
       this.file.readAsText(this.file.externalRootDirectory, "dados.csv").then(streamArquivo => {
@@ -84,19 +74,24 @@ export class VisualizarDadosPage {
                 dataRegistro = new Date(parseInt(d[1]), parseInt(d[2]) - 1, parseInt(d[3]), parseInt(d[4]), parseInt(d[5]));
               }
               else {
-              let registro = new RegistroAgua(dataRegistro, +coluna);
+                let registro = new RegistroAgua(dataRegistro, +coluna);
                 this.dados.push(registro);
                 //console.log(registro);
                 //Próximo registro feito após 1 minuto
                 dataRegistro = new Date(dataRegistro.getTime() + 60 * 1000);
               }
-            })
+            });
           });
 
         this.menorDataEncontrada = this.dados[0].dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         this.maiorDataEncontrada = this.dados[this.dados.length - 1].dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
         console.log("Cordova: ", this.dados);
+
+        loading.setContent('Filtrando os Dados...')
+        this.preencherDadosFiltrados(this.filtro);
+        loading.dismiss();
+        this.dadosLidos = true;
 
       }).catch(error => console.log(error));
     }
@@ -155,6 +150,11 @@ export class VisualizarDadosPage {
       this.maiorDataEncontrada = this.dados[this.dados.length - 1].dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
       console.log(this.dados);
+
+      loading.setContent('Filtrando os Dados...')
+      this.preencherDadosFiltrados(this.filtro);
+      loading.dismiss();
+      this.dadosLidos = true;
     }
   }
 
@@ -165,6 +165,21 @@ export class VisualizarDadosPage {
       if ((!filtro.DataInicial || registro.dataRegistro >= filtro.DataInicial) && (!filtro.DataFinal || registro.dataRegistro <= filtro.DataFinal))
         this.dadosFiltrados.push(registro);
     });
+  }
+
+  calcularParametros(arrayDados: Array<RegistroAgua>) {
+
+    let fluxoTotal: number = 0;
+    let maiorFluxo: RegistroAgua = arrayDados[0];
+    let menorFluxo: RegistroAgua = arrayDados[0];
+    
+    arrayDados.forEach(dado => {
+      fluxoTotal += dado.valorRegistro;
+      maiorFluxo = maiorFluxo.valorRegistro <= dado.valorRegistro ? dado : maiorFluxo;
+      menorFluxo = menorFluxo.valorRegistro >= dado.valorRegistro ? dado : menorFluxo;
+    });
+
+    this.parametros = { fluxoTotal, maiorFluxo, menorFluxo };
   }
 
   agruparDados(arrayDados: Array<RegistroAgua>, tamanhoGrupo: number): Array<DadosResumidosAgua> {
@@ -210,11 +225,15 @@ export class VisualizarDadosPage {
 
   mostrarGrafico(formato) {
     if (formato == 'hora') {
+      //Agrupar por hora (60 minutos)
+      this.dadosPorHora = this.agruparDados(this.dadosFiltrados, 60);
       this.montarArraysChart(this.dadosPorHora);
       this.exibirGraficoHora = true;
       this.exibirGraficoDia = false;
     }
     else if (formato == 'dia') {
+      //Agrupar por dia (1440 minutos)
+      this.dadosPorDia = this.agruparDados(this.dadosFiltrados, 1440);
       this.montarArraysChart(this.dadosPorDia);
       this.exibirGraficoHora = false;
       this.exibirGraficoDia = true;
