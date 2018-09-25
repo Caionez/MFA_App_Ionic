@@ -32,11 +32,11 @@
         </ion-note>
       </ion-item>
     </div>
-    <button ion-item detail-push>
+    <button ion-item detail-push (click)="abrirConfiguracoesBluetooth();">
       <ion-icon item-start name="bluetooth" color="dark"></ion-icon>
       Configurações Bluetooth
       <ion-note item-end>
-        Desativado
+        {{estadoBluetooth}}
       </ion-note>
     </button>
 

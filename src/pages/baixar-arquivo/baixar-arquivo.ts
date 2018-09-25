@@ -1,26 +1,45 @@
-import { Component } from '@angular/core';
-import { NavController, ToastController, LoadingController } from 'ionic-angular';
+import { Component } from "@angular/core";
+import {
+  NavController,
+  ToastController,
+  LoadingController,
+  Platform
+} from "ionic-angular";
 
-import { BLE } from '@ionic-native/ble';
-import { File } from '@ionic-native/file';
+import { BLE } from "@ionic-native/ble";
+import { File } from "@ionic-native/file";
+import { Diagnostic } from "@ionic-native/diagnostic";
 
 @Component({
-  selector: 'baixar-arquivo',
-  templateUrl: 'baixar-arquivo.html'
+  selector: "baixar-arquivo",
+  templateUrl: "baixar-arquivo.html"
 })
 export class BaixarArquivoPage {
-
+  plataformaCordova: boolean;
   ble: BLE;
   file: File;
+  diagCtrl: Diagnostic;
   streamBluetooth: string;
+  estadoBluetooth: string;
   conectadoArduino: boolean;
 
-  constructor(public navCtrl: NavController, public toastCtrl: ToastController, public loadingCtrl: LoadingController) {
-
+  constructor(
+    public navCtrl: NavController,
+    public plt: Platform,
+    public toastCtrl: ToastController,
+    public loadingCtrl: LoadingController
+  ) {
+    this.plataformaCordova = plt.is("cordova");
     this.ble = new BLE();
     this.file = new File();
+    this.diagCtrl = new Diagnostic();
 
     this.streamBluetooth = "";
+    this.atualizarLabelEstadoBT();
+
+    this.diagCtrl.registerBluetoothStateChangeHandler(
+      this.atualizarLabelEstadoBT
+    );
   }
 
   /*
@@ -30,11 +49,55 @@ export class BaixarArquivoPage {
   0000ffe1-0000-1000-8000-00805f9b34fb
   */
 
-  conectarDispositivo() {
+  abrirConfiguracoesBluetooth() {
 
-    this.ble.connect('00:15:83:30:BA:04').subscribe(
-      peripheralData => { console.log(JSON.stringify(peripheralData)); },
-      peripheralData => { console.log('Desconectado'); }
+  //Solicitar permissoes ao acessar tela (nao solicitar do bluetooth, apenas ativar ele)
+    this.diagCtrl.requestRuntimePermissions([this.diagCtrl.permission.ACCESS_COARSE_LOCATION, this.diagCtrl.permission.READ_EXTERNAL_STORAGE, this.diagCtrl.permission.WRITE_EXTERNAL_STORAGE]).then(
+      result => {
+        this.mostrarToast("PERMISSOES" + result, 3000);
+      },
+      rejection => this.mostrarToast("rejection2" + rejection, 3000)
+    );
+
+    // this.diagCtrl.requestLocationAuthorization().then(
+    //   result => {
+    //     this.mostrarToast("reqLocAuth " + result, 3000);
+    //   },
+    //   rejection => this.mostrarToast("rejection2" + rejection, 3000)
+    //  );
+  }
+
+  atualizarLabelEstadoBT() {
+    if (this.plataformaCordova) {
+      this.diagCtrl
+        .getBluetoothState()
+        .then(state => {
+          switch (state) {
+            case this.diagCtrl.bluetoothState.POWERED_ON:
+              this.estadoBluetooth = "Ligado";
+              break;
+            case this.diagCtrl.bluetoothState.POWERED_OFF:
+              this.estadoBluetooth = "Desligado";
+              break;
+            case this.diagCtrl.bluetoothState.POWERING_ON:
+              this.estadoBluetooth = "Ligando";
+              break;
+            default:
+              this.estadoBluetooth = "???";
+          }
+        })
+        .catch(e => console.error(e));
+    } else this.estadoBluetooth = "Web";
+  }
+
+  conectarDispositivo() {
+    this.ble.connect("00:15:83:30:BA:04").subscribe(
+      peripheralData => {
+        console.log(JSON.stringify(peripheralData));
+      },
+      peripheralData => {
+        console.log("Desconectado");
+      }
     );
 
     /*
@@ -47,32 +110,35 @@ export class BaixarArquivoPage {
 
   transferirArquivo() {
     //Enviar para arduino ate onde já foi transferido
-    this.ble.write('00:15:83:30:BA:04',
-      '0000ffe0-0000-1000-8000-00805f9b34fb',
-      '0000ffe1-0000-1000-8000-00805f9b34fb',
+    this.ble
+      .write(
+        "00:15:83:30:BA:04",
+        "0000ffe0-0000-1000-8000-00805f9b34fb",
+        "0000ffe1-0000-1000-8000-00805f9b34fb",
 
-      this.stringToBytes("ultimalinha")).then(
-        //Iniciar a transmissão a partir daqui
-      );
+        this.stringToBytes("ultimalinha")
+      )
+      .then
+      //Iniciar a transmissão a partir daqui
+      ();
 
-
-    this.ble.startNotification('00:15:83:30:BA:04',
-      '0000ffe0-0000-1000-8000-00805f9b34fb',
-      '0000ffe1-0000-1000-8000-00805f9b34fb')
+    this.ble
+      .startNotification(
+        "00:15:83:30:BA:04",
+        "0000ffe0-0000-1000-8000-00805f9b34fb",
+        "0000ffe1-0000-1000-8000-00805f9b34fb"
+      )
       .subscribe(result => {
-
         console.log(this.bytesToString(result));
 
         if (this.verificarArquivoCompleto()) {
           this.salvarStreamEmArquivo();
         }
         this.streamBluetooth += this.bytesToString(result);
-      }
-      );
+      });
   }
 
   testeSalvaArquivo() {
-
     this.streamBluetooth = `#FNA#dados.csv#FNA#
 #SOF#
 01/01/2018 - 01:00;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;8.70;
@@ -88,14 +154,19 @@ export class BaixarArquivoPage {
   }
 
   desconectar() {
-    this.ble.disconnect('00:15:83:30:BA:04').then(response => console.log("Desconectado pelo botão"));
+    this.ble
+      .disconnect("00:15:83:30:BA:04")
+      .then(response => console.log("Desconectado pelo botão"));
   }
 
   verificarArquivoCompleto(): boolean {
-    if (this.streamBluetooth.startsWith("#FNA#") && this.streamBluetooth.endsWith("#EOF#") && this.streamBluetooth.indexOf("#SOF#") > 0) {
+    if (
+      this.streamBluetooth.startsWith("#FNA#") &&
+      this.streamBluetooth.endsWith("#EOF#") &&
+      this.streamBluetooth.indexOf("#SOF#") > 0
+    ) {
       return true;
-    }
-    else return false;
+    } else return false;
   }
 
   bytesToString(buffer) {
@@ -111,14 +182,27 @@ export class BaixarArquivoPage {
   }
 
   salvarStreamEmArquivo() {
-    let nomeArquivo: string = /^(#FNA#)(\w*\.\w*)(#FNA#)/.exec(this.streamBluetooth)[2]; //Extraindo o grupo 2 (Nome do arquivo)
-    let conteudoArquivo: string = this.streamBluetooth.substr(this.streamBluetooth.indexOf("#SOF#") + 5).replace("#EOF#", "").trim();
+    let nomeArquivo: string = /^(#FNA#)(\w*\.\w*)(#FNA#)/.exec(
+      this.streamBluetooth
+    )[2]; //Extraindo o grupo 2 (Nome do arquivo)
+    let conteudoArquivo: string = this.streamBluetooth
+      .substr(this.streamBluetooth.indexOf("#SOF#") + 5)
+      .replace("#EOF#", "")
+      .trim();
 
-    this.file.writeFile(this.file.externalRootDirectory, nomeArquivo,
-      this.stringToBytes(conteudoArquivo), { replace: true })
+    this.file
+      .writeFile(
+        this.file.externalRootDirectory,
+        nomeArquivo,
+        this.stringToBytes(conteudoArquivo),
+        { replace: true }
+      )
       .then(result => {
         console.log("Arquivo transferido." + JSON.stringify(result));
-        this.mostrarToast("Arquivo '" + nomeArquivo + "' transferido com sucesso!", 3000);
+        this.mostrarToast(
+          "Arquivo '" + nomeArquivo + "' transferido com sucesso!",
+          3000
+        );
       })
       .catch(result => {
         console.log("Erro ao transferir arquivo!" + JSON.stringify(result));
@@ -127,7 +211,10 @@ export class BaixarArquivoPage {
   }
 
   mostrarToast(mensagem: string, duracao: number) {
-    const objToast = this.toastCtrl.create({ message: mensagem, duration: duracao });
+    const objToast = this.toastCtrl.create({
+      message: mensagem,
+      duration: duracao
+    });
     objToast.present();
   }
 
@@ -136,8 +223,9 @@ export class BaixarArquivoPage {
       content: "Conectando...",
       duration: 2000
     });
-    loader.present().then(result => { this.conectadoArduino = true; });
-
+    loader.present().then(result => {
+      this.conectadoArduino = true;
+    });
   }
 
   testeDesconectarArduino() {
@@ -145,6 +233,8 @@ export class BaixarArquivoPage {
       content: "Desconectando...",
       duration: 2000
     });
-    loader.present().then(result => { this.conectadoArduino = false; });
+    loader.present().then(result => {
+      this.conectadoArduino = false;
+    });
   }
 }
