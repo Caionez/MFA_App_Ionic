@@ -3,7 +3,8 @@ import {
   NavController,
   ToastController,
   LoadingController,
-  Platform
+  Platform,
+  AlertController
 } from "ionic-angular";
 
 import { BLE } from "@ionic-native/ble";
@@ -27,7 +28,8 @@ export class BaixarArquivoPage {
     public navCtrl: NavController,
     public plt: Platform,
     public toastCtrl: ToastController,
-    public loadingCtrl: LoadingController
+    public loadingCtrl: LoadingController,
+    public alertCtrl: AlertController
   ) {
     this.plataformaCordova = plt.is("cordova");
     this.ble = new BLE();
@@ -37,9 +39,10 @@ export class BaixarArquivoPage {
     this.streamBluetooth = "";
     this.atualizarLabelEstadoBT();
 
-    this.diagCtrl.registerBluetoothStateChangeHandler(
-      this.atualizarLabelEstadoBT
-    );
+    //debugar
+    this.verificarPermissoes();
+
+    this.diagCtrl.registerBluetoothStateChangeHandler(this.atualizarLabelEstadoBT);
   }
 
   /*
@@ -49,16 +52,95 @@ export class BaixarArquivoPage {
   0000ffe1-0000-1000-8000-00805f9b34fb
   */
 
-  abrirConfiguracoesBluetooth() {
+  verificarPermissoes() {
 
-  //Solicitar permissoes ao acessar tela (nao solicitar do bluetooth, apenas ativar ele)
-    this.diagCtrl.requestRuntimePermissions([this.diagCtrl.permission.ACCESS_COARSE_LOCATION, this.diagCtrl.permission.READ_EXTERNAL_STORAGE, this.diagCtrl.permission.WRITE_EXTERNAL_STORAGE]).then(
-      result => {
-        this.mostrarToast("PERMISSOES" + result, 3000);
+    if (!this.verificarSePossuiPermissoes()) {
+      const confirm = this.alertCtrl.create({
+        title: "Permissões necessárias",
+        message:
+          "Para obter o Arquivo do Arduino, é necessário conceder permissões de Acesso a Localização e a Memória. \nConceda-as a seguir para continuar",
+        buttons: [
+          {
+            text: "Ok",
+            handler: () => {this.solicitarPermissoes();}
+          }
+        ]
+      });
+      confirm.present();
+    }
+
+    this.diagCtrl.isBluetoothAvailable().then(
+      available => {
+        this.atualizarLabelEstadoBT();
       },
-      rejection => this.mostrarToast("rejection2" + rejection, 3000)
-    );
+      unavailable => {
+        const confirm = this.alertCtrl.create({
+          title: "Ativar Bluetooth?",
+          message:
+            "Para obter o Arquivo do Arduino, é necessário ativar o Bluetooth. \nDeseja ativar o Bluetooth?",
+          buttons: [
+            {
+              text: "Não",
+              handler: () => {
+                this.mostrarToast("Não é possível obter o arquivo sem o Bluetooth", 3000);
+              }
+            },
+            {
+              text: "Sim",
+              handler: () => {
+                const loader = this.loadingCtrl.create({
+                  content: "Ativando Bluetooth..."
+                });
+                loader.present().then(result => {
+                  this.diagCtrl.setBluetoothState(true).then(result => { loader.dismiss(); });
+                });
+              }
+            }
+          ]
+        });
+        confirm.present();
+      });
+  }
 
+  verificarSePossuiPermissoes(): boolean {
+    if(this.diagCtrl.isLocationAuthorized().then(result => {return true}, error => {return false}) &&
+      (this.diagCtrl.isExternalStorageAuthorized().then(result => {return true}, error => {return false})))
+        return true;
+      else 
+        return false;
+  }
+  solicitarPermissoes() {
+    this.diagCtrl
+      .requestRuntimePermissions([
+        this.diagCtrl.permission.ACCESS_COARSE_LOCATION,
+        this.diagCtrl.permission.READ_EXTERNAL_STORAGE,
+        this.diagCtrl.permission.WRITE_EXTERNAL_STORAGE
+      ])
+      .then(
+        result => this.mostrarToast("Permissões concedidas", 3000),
+        rejection =>
+          this.mostrarToast(
+            "É necessário conceder as permissões para obter o arquivo",
+            3000
+          )
+      );
+  }
+
+  abrirConfiguracoesBluetooth() {
+    //Solicitar permissoes ao acessar tela (nao solicitar do bluetooth, apenas ativar ele)
+   /* this.diagCtrl
+      .requestRuntimePermissions([
+        this.diagCtrl.permission.ACCESS_COARSE_LOCATION,
+        this.diagCtrl.permission.READ_EXTERNAL_STORAGE,
+        this.diagCtrl.permission.WRITE_EXTERNAL_STORAGE
+      ])
+      .then(
+        result => {
+          this.mostrarToast("PERMISSOES" + result, 3000);
+        },
+        rejection => this.mostrarToast("rejection2" + rejection, 3000)
+      );
+*/
     // this.diagCtrl.requestLocationAuthorization().then(
     //   result => {
     //     this.mostrarToast("reqLocAuth " + result, 3000);
