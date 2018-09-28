@@ -38,12 +38,12 @@
     </ion-row>
     <ion-row>&nbsp;</ion-row>
     <ion-row>
-      <button ion-button full clear icon-start color="dark">
+      <button ion-button full clear icon-start color="dark" (click)="mostrarFiltros()">
         <ion-icon name="ios-funnel"></ion-icon>
         Filtrar dados
       </button>
     </ion-row>
-    <ion-row>
+    <!-- <ion-row>
       <ion-col>
         <ion-item>
           <ion-label floating>De</ion-label>
@@ -56,8 +56,8 @@
           <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataFinal"></ion-datetime>
         </ion-item>
       </ion-col>
-    </ion-row>
-    <ion-row>
+    </ion-row>-->
+    <ion-row> 
       <ion-col>
         <button ion-button block icon-start color="light" (click)="mostrarGrafico('hora');">
           <ion-icon name="time"></ion-icon>

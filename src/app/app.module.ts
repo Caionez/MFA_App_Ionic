@@ -5,7 +5,7 @@ import { MyApp } from './app.component';
 import { ChartsModule } from 'ng2-charts';
 
 import { MenuPrincipalPage } from './../pages/menu-principal/menu-principal';
-import { VisualizarDadosPage } from './../pages/visualizar-dados/visualizar-dados';
+import { VisualizarDadosPage, FiltrarDados } from './../pages/visualizar-dados/visualizar-dados';
 import { BaixarArquivoPage } from './../pages/baixar-arquivo/baixar-arquivo';
 
 import { StatusBar } from '@ionic-native/status-bar';
@@ -18,7 +18,8 @@ import { BaixarArquivoSerialPage } from '../pages/baixar-arquivo-serial/baixar-a
     MenuPrincipalPage,
     BaixarArquivoPage,
     BaixarArquivoSerialPage,
-    VisualizarDadosPage
+    VisualizarDadosPage,
+    FiltrarDados
   ],
   imports: [
     BrowserModule,
@@ -31,7 +32,8 @@ import { BaixarArquivoSerialPage } from '../pages/baixar-arquivo-serial/baixar-a
     MenuPrincipalPage,
     VisualizarDadosPage,
     BaixarArquivoPage,
-    BaixarArquivoSerialPage
+    BaixarArquivoSerialPage,
+    FiltrarDados
   ],
   providers: [
     StatusBar,
