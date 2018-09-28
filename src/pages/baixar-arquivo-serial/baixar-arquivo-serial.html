@@ -3,7 +3,7 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Baixar Arquivo</ion-title>
+    <ion-title>Baixar Arquivo Serial</ion-title>
   </ion-navbar>
 </ion-header>
 
@@ -32,13 +32,13 @@
         </ion-note>
       </ion-item>
     </div>
-    <!-- <button ion-item detail-push (click)="abrirConfiguracoesBluetooth();">
+    <button ion-item detail-push (click)="abrirConfiguracoesBluetooth();">
       <ion-icon item-start name="bluetooth" color="dark"></ion-icon>
       Configurações Bluetooth
       <ion-note item-end>
         {{estadoBluetooth}}
       </ion-note>
-    </button> -->
+    </button>
 
     <button ion-item (click)="conectarDispositivo();">
       <ion-icon item-start name="sync" color="dark"></ion-icon>
@@ -74,6 +74,6 @@
     <!-- <ion-item>
     <button ion-button block color="danger" (click)="testeDesconectarArduino();">Desconectar</button>
     </ion-item> -->
-    <p>{{this.streamBluetooth}}</p>
+    <p>{{resultado}}</p>
   </ion-item-group>
 </ion-content>

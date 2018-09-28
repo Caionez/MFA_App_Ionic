@@ -12,10 +12,10 @@ import { File } from "@ionic-native/file";
 import { Diagnostic } from "@ionic-native/diagnostic";
 
 @Component({
-  selector: "baixar-arquivo",
-  templateUrl: "baixar-arquivo.html"
+  selector: "baixar-arquivo-serial",
+  templateUrl: "baixar-arquivo-serial.html"
 })
-export class BaixarArquivoPage {
+export class BaixarArquivoSerialPage {
   plataformaCordova: boolean;
   ble: BLE;
   file: File;
@@ -218,10 +218,10 @@ export class BaixarArquivoPage {
           .then
           //Iniciar a transmissão a partir daqui
           ();*/
-    this.streamBluetooth = "";
+
     const loader = this.loadingCtrl.create({
       content: "Transferindo arquivo...",
-      duration: 15000
+      duration: 30000
     });
     loader.present();
 
@@ -232,16 +232,15 @@ export class BaixarArquivoPage {
         "0000ffe1-0000-1000-8000-00805f9b34fb"
       )
       .subscribe(result => {
-        console.log(this.bytesToString(result));
+        //this.mostrarToast(this.bytesToString(result), 1000);
 
-        this.streamBluetooth += this.bytesToString(result);
-        
         if (this.verificarArquivoCompleto()) {
 
           loader.dismiss();
 
           this.salvarStreamEmArquivo();
-        }        
+        }
+        this.streamBluetooth += this.bytesToString(result);
       }, error => this.mostrarToast("Erro ao transferir arquivo", 3000));
   }
 
@@ -268,9 +267,9 @@ export class BaixarArquivoPage {
 
   verificarArquivoCompleto(): boolean {
     if (
-      this.streamBluetooth.indexOf("#FNA#") != -1  &&
-      this.streamBluetooth.indexOf("#EOF#") != -1 &&
-      this.streamBluetooth.indexOf("#SOF#") != -1
+      this.streamBluetooth.startsWith("#FNA#") &&
+      this.streamBluetooth.endsWith("#EOF#") &&
+      this.streamBluetooth.indexOf("#SOF#") > 0
     ) {
       this.mostrarToast("Arquivo completo", 1000)
       return true;

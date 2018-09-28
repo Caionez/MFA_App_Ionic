@@ -9,6 +9,7 @@ import { VisualizarDadosPage } from '../pages/visualizar-dados/visualizar-dados'
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { BaixarArquivoSerialPage } from '../pages/baixar-arquivo-serial/baixar-arquivo-serial';
 
 
 @Component({
@@ -31,6 +32,7 @@ export class MyApp {
     this.pages = [
       { title: 'Menu Principal', component: MenuPrincipalPage },
       { title: 'Baixar Arquivo', component: BaixarArquivoPage },
+      { title: 'Baixar Arquivo Serial', component: BaixarArquivoSerialPage },
       { title: 'Visualizar Dados', component: VisualizarDadosPage }      
     ];
   }

@@ -84,8 +84,5 @@
     <plugin name="cordova-plugin-ionic-keyboard" spec="^2.0.5" />
     <plugin name="cordova-plugin-ble-central" spec="^1.2.2" />
     <plugin name="cordova-plugin-file" spec="^6.0.1" />
-    <allow-navigation href="http://192.168.2.4:8100" sessionid="5b70dd38" />
-    <plugin name="cordova.plugins.diagnostic" spec="^4.0.10" />
-    <allow-navigation href="http://129.222.73.66:8100" />
     <engine name="android" spec="7.0.0" />
 </widget>
