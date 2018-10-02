@@ -121,14 +121,9 @@ export class VisualizarDadosPage {
       this.dados.length - 1
     ].dataRegistro.toLocaleDateString("pt-br", this.padraoData);
 
-    console.log(this.dados);
+    //console.log(this.dados);
     this.dadosLidos = true;
-
-    this.preencherDadosFiltrados(this.filtro);
-
-    if (this.dadosFiltrados) {
-      this.calcularParametros(this.dadosFiltrados);
-    }
+    this.calcularParametros(this.dados);
   }
 
   preencherDadosFiltrados(filtro: { DataInicial: Date; DataFinal: Date }) {
@@ -257,9 +252,24 @@ export class VisualizarDadosPage {
   }
 
   mostrarFiltros() {
+
+    let loading = this.loadingCtrl.create({
+      content: "Filtrando dados..."
+    });
+
+    loading.present();
+
     let profileModal = this.modalCtrl.create(FiltrarDados);
     profileModal.onDidDismiss(data => {
-      this.filtro = data;
+      
+      if (data && data.DataInicial)      
+        this.filtro.DataInicial = Date.parse(data.DataInicial);
+      if (data && data.DataFinal)
+        this.filtro.DataFinal = Date.parse(data.DataFinal);
+        
+      this.preencherDadosFiltrados(this.filtro);
+      this.calcularParametros(this.dadosFiltrados);
+      loading.dismiss();
     });
     profileModal.present();
   }
@@ -311,7 +321,7 @@ export class VisualizarDadosPage {
     </ion-title>    
   </ion-toolbar>
 </ion-header>
-<ion-content>
+<ion-content padding>
 <ion-row>
   <ion-item-divider>
       <b>PERÍODO</b>
