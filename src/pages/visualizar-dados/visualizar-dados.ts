@@ -14,13 +14,8 @@ import { File } from "@ionic-native/file";
   templateUrl: "visualizar-dados.html"
 })
 export class VisualizarDadosPage {
-  readonly padraoData: {
-    year: "numeric";
-    month: "numeric";
-    day: "numeric";
-    hour: "2-digit";
-    minute: "2-digit";
-  };
+  readonly padraoData: { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" };
+  
   plataformaCordova: boolean;
   dadosLidos: boolean;
   filtro: any;
@@ -41,11 +36,7 @@ export class VisualizarDadosPage {
 
   file = new File();
 
-  constructor(
-    public loadingCtrl: LoadingController,
-    public modalCtrl: ModalController,
-    public plt: Platform
-  ) {
+  constructor(public loadingCtrl: LoadingController, public modalCtrl: ModalController, public plt: Platform) {
     this.filtro = {
       DataInicial: "",
       DataFinal: ""
@@ -56,40 +47,40 @@ export class VisualizarDadosPage {
     this.lineChartLabels = new Array<any>();
   }
 
-  filtrarDados() {
-    console.log(this.filtro);
+  lerArquivo() {
+    let linhasArquivo: String[];
 
     let loading = this.loadingCtrl.create({
       content: "Lendo Arquivo..."
     });
 
     loading.present();
-
-    this.processarArquivo();
-
-    //loading.setContent('Filtrando os Dados...');
-    loading.dismiss();
-  }
-
-  processarArquivo() {
-    let linhasArquivo: String[];
-
+    
     if (this.plataformaCordova) {
       this.file
         .readAsText(this.file.externalRootDirectory, "dados.csv")
         .then(streamArquivo => {
           linhasArquivo = streamArquivo.split("\n");
-          this.montarObjetosDados(linhasArquivo);
+          this.dados = this.montarObjetosDados(linhasArquivo);
+          this.dadosLidos = true;
+
+          this.calcularValoresResumidos(this.dados);
         });
     } else {
       linhasArquivo = this.arquivoMock().split("\n");
-      this.montarObjetosDados(linhasArquivo);
+      this.dados = this.montarObjetosDados(linhasArquivo);
+      this.dadosLidos = true;
+
+      this.calcularValoresResumidos(this.dados);
     }
+    
+    loading.dismiss();
   }
-  montarObjetosDados(linhasArquivo: String[]) {
+
+  montarObjetosDados(linhasArquivo: String[]): Array<RegistroAgua> {
     let colunasArquivo: String[];
     let dataRegistro: Date;
-    this.dados = new Array<RegistroAgua>();
+    let arrayDados = new Array<RegistroAgua>();
 
     if (linhasArquivo)
       linhasArquivo.forEach(coluna => {
@@ -97,48 +88,23 @@ export class VisualizarDadosPage {
         colunasArquivo.forEach((coluna: string, indice) => {
           if (indice == 0) {
             let d = coluna.split(/(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
-            dataRegistro = new Date(
-              parseInt(d[1]),
-              parseInt(d[2]) - 1,
-              parseInt(d[3]),
-              parseInt(d[4]),
-              parseInt(d[5])
-            );
+            dataRegistro = new Date(parseInt(d[1]), parseInt(d[2]) - 1, parseInt(d[3]), parseInt(d[4]), parseInt(d[5]));
           } else {
             let registro = new RegistroAgua(dataRegistro, +coluna);
-            this.dados.push(registro);
+            arrayDados.push(registro);
             //Próximo registro feito após 1 minuto
             dataRegistro = new Date(dataRegistro.getTime() + 60 * 1000);
           }
         });
       });
 
-    this.menorDataEncontrada = this.dados[0].dataRegistro.toLocaleDateString(
-      "pt-br",
-      this.padraoData
-    );
-    this.maiorDataEncontrada = this.dados[
-      this.dados.length - 1
-    ].dataRegistro.toLocaleDateString("pt-br", this.padraoData);
-
-    //console.log(this.dados);
-    this.dadosLidos = true;
-    this.calcularParametros(this.dados);
+    this.menorDataEncontrada = arrayDados[0].dataRegistro.toLocaleDateString("pt-br",this.padraoData);
+    this.maiorDataEncontrada = arrayDados[arrayDados.length - 1].dataRegistro.toLocaleDateString("pt-br", this.padraoData);
+    
+    return arrayDados;
   }
 
-  preencherDadosFiltrados(filtro: { DataInicial: Date; DataFinal: Date }) {
-    this.dadosFiltrados = new Array<RegistroAgua>();
-
-    this.dados.forEach(registro => {
-      if (
-        (!filtro.DataInicial || registro.dataRegistro >= filtro.DataInicial) &&
-        (!filtro.DataFinal || registro.dataRegistro <= filtro.DataFinal)
-      )
-        this.dadosFiltrados.push(registro);
-    });
-  }
-
-  calcularParametros(arrayDados: Array<RegistroAgua>) {
+  calcularValoresResumidos(arrayDados: Array<RegistroAgua>) {
     let fluxoTotal: number = 0;
     let maiorFluxo: RegistroAgua = arrayDados[0];
     let menorFluxo: RegistroAgua = arrayDados[0];
@@ -154,14 +120,25 @@ export class VisualizarDadosPage {
     this.parametros = { fluxoTotal, maiorFluxo, menorFluxo };
   }
 
-  agruparDados(
-    arrayDados: Array<RegistroAgua>,
-    tamanhoGrupo: number
-  ): Array<DadosResumidosAgua> {
+  mostrarGrafico(formato) {
+    if (formato == "hora") {
+      //Agrupar por hora (60 minutos)
+      this.dadosPorHora = this.agruparDados(this.dadosFiltrados, 60);
+      this.montarArraysChart(this.dadosPorHora);
+      this.exibirGraficoHora = true;
+      this.exibirGraficoDia = false;
+    } else if (formato == "dia") {
+      //Agrupar por dia (1440 minutos)
+      this.dadosPorDia = this.agruparDados(this.dadosFiltrados, 1440);
+      this.montarArraysChart(this.dadosPorDia);
+      this.exibirGraficoHora = false;
+      this.exibirGraficoDia = true;
+    }
+  }
+
+  agruparDados(arrayDados: Array<RegistroAgua>, tamanhoGrupo: number): Array<DadosResumidosAgua> {
     let grupoRegistros: Array<RegistroAgua> = new Array<RegistroAgua>();
-    let dadosResumidos: Array<DadosResumidosAgua> = new Array<
-      DadosResumidosAgua
-    >();
+    let dadosResumidos: Array<DadosResumidosAgua> = new Array<DadosResumidosAgua>();
 
     arrayDados.forEach((dado, index) => {
       if (index == 0 || index % tamanhoGrupo != 0) {
@@ -201,30 +178,45 @@ export class VisualizarDadosPage {
     this.lineChartLabels = datas;
   }
 
-  mostrarGrafico(formato) {
-    if (formato == "hora") {
-      //Agrupar por hora (60 minutos)
-      this.dadosPorHora = this.agruparDados(this.dadosFiltrados, 60);
-      this.montarArraysChart(this.dadosPorHora);
-      this.exibirGraficoHora = true;
-      this.exibirGraficoDia = false;
-    } else if (formato == "dia") {
-      //Agrupar por dia (1440 minutos)
-      this.dadosPorDia = this.agruparDados(this.dadosFiltrados, 1440);
-      this.montarArraysChart(this.dadosPorDia);
-      this.exibirGraficoHora = false;
-      this.exibirGraficoDia = true;
-    }
+  mostrarFiltros() {
+
+    let loading = this.loadingCtrl.create({
+      content: "Filtrando dados..."
+    });
+
+    loading.present();
+
+    let profileModal = this.modalCtrl.create(FiltrarDados);
+    profileModal.onDidDismiss(data => {
+      
+      if (data && data.DataInicial)      
+        this.filtro.DataInicial = Date.parse(data.DataInicial);
+      if (data && data.DataFinal)
+        this.filtro.DataFinal = Date.parse(data.DataFinal);
+        
+      this.preencherDadosFiltrados(this.filtro);
+      this.calcularValoresResumidos(this.dadosFiltrados);
+      loading.dismiss();
+    });
+    profileModal.present();
   }
 
-  public lineChartData: Array<
-    any
-  >; /* = [
+  preencherDadosFiltrados(filtro: { DataInicial: Date; DataFinal: Date }) {
+    this.dadosFiltrados = new Array<RegistroAgua>();
+
+    this.dados.forEach(registro => {
+      if (
+        (!filtro.DataInicial || registro.dataRegistro >= filtro.DataInicial) &&
+        (!filtro.DataFinal || registro.dataRegistro <= filtro.DataFinal)
+      )
+        this.dadosFiltrados.push(registro);
+    });
+  }
+
+  public lineChartData: Array<any>; /* = [
     {data: [65, 59, 80], label: 'Vazão de água'}
   ];*/
-  public lineChartLabels: Array<
-    any
-  >; /* = ['10/09/2018 - 10:00', '11/09/2018 - 10:00', '12/09/2018 - 10:00',];*/
+  public lineChartLabels: Array<any>; /* = ['10/09/2018 - 10:00', '11/09/2018 - 10:00', '12/09/2018 - 10:00',];*/
   public lineChartOptions: any = {
     responsive: true
   };
@@ -249,29 +241,6 @@ export class VisualizarDadosPage {
 
   public chartHovered(e: any): void {
     console.log(e);
-  }
-
-  mostrarFiltros() {
-
-    let loading = this.loadingCtrl.create({
-      content: "Filtrando dados..."
-    });
-
-    loading.present();
-
-    let profileModal = this.modalCtrl.create(FiltrarDados);
-    profileModal.onDidDismiss(data => {
-      
-      if (data && data.DataInicial)      
-        this.filtro.DataInicial = Date.parse(data.DataInicial);
-      if (data && data.DataFinal)
-        this.filtro.DataFinal = Date.parse(data.DataFinal);
-        
-      this.preencherDadosFiltrados(this.filtro);
-      this.calcularParametros(this.dadosFiltrados);
-      loading.dismiss();
-    });
-    profileModal.present();
   }
 
   arquivoMock(): string {
