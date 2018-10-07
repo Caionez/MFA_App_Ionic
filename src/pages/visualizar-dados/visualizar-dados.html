@@ -12,10 +12,7 @@
 
   <ion-grid>
     <ion-row>
-      <ion-input placeholder="Caminho do arquivo..."></ion-input>
-    </ion-row>
-    <ion-row>
-      <button ion-button block icon-start (click)="filtrarDados();">
+      <button ion-button block icon-start (click)="lerArquivo();">
         <ion-icon name="search"></ion-icon>
         Ler Arquivo
       </button>
@@ -38,11 +35,30 @@
     </ion-row>
     <ion-row>&nbsp;</ion-row>
     <ion-row>
-      <button ion-button full clear icon-start color="dark" (click)="mostrarFiltros()">
+      <button ion-button full icon-start color="light" (click)="mostrarFiltros()">
         <ion-icon name="ios-funnel"></ion-icon>
         Filtrar dados
       </button>
     </ion-row>
+
+    <ion-list *ngIf="parametros">
+      <ion-item>
+        <h2><b>Fluxo total no período:</b></h2>
+        <p>{{parametros.fluxoTotal.toFixed(3)}} litros</p>
+      </ion-item>
+      <ion-item>
+        <h2><b>Maior fluxo: {{parametros.maiorFluxo.valorRegistro.toFixed(3)}} litros</b></h2>
+        <p>Em: {{parametros.maiorFluxo.dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric',
+          day: 'numeric', hour: '2-digit', minute: '2-digit' })}}</p>
+      </ion-item>
+      <ion-item>
+        <h2><b>Menor fluxo: {{parametros.menorFluxo.valorRegistro.toFixed(3)}} litros</b></h2>
+        <p>Em {{parametros.menorFluxo.dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric',
+          day: 'numeric', hour: '2-digit', minute: '2-digit' })}}</p>
+      </ion-item>
+    </ion-list>
+
+
     <!-- <ion-row>
       <ion-col>
         <ion-item>
@@ -82,23 +98,7 @@
           [colors]="lineChartColors" [legend]="lineChartLegend" [chartType]="lineChartType" (chartHover)="chartHovered($event)"
           (chartClick)="chartClicked($event)"></canvas>
       </div>
-    </div>
-    <ion-list *ngIf="parametros">
-      <ion-item>
-        <h2><b>Fluxo total no período:</b></h2>
-        <p>{{parametros.fluxoTotal}} litros</p>
-      </ion-item>
-      <ion-item>
-        <h2><b>Maior fluxo: {{parametros.maiorFluxo.valorRegistro}} litros</b></h2>
-        <p>Em: {{parametros.maiorFluxo.dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric',
-          day: 'numeric', hour: '2-digit', minute: '2-digit' })}}</p>
-      </ion-item>
-      <ion-item>
-        <h2><b>Menor fluxo: {{parametros.menorFluxo.valorRegistro}} litros</b></h2>
-        <p>Em {{parametros.menorFluxo.dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric',
-          day: 'numeric', hour: '2-digit', minute: '2-digit' })}}</p>
-      </ion-item>
-    </ion-list>
+    </div>    
   </ion-grid>
 
 </ion-content>
