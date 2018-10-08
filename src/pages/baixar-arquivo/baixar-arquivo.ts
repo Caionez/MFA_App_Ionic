@@ -37,15 +37,11 @@ export class BaixarArquivoPage {
     this.diagCtrl = new Diagnostic();
 
     this.streamBluetooth = "";
+    this.diagCtrl.registerBluetoothStateChangeHandler(state => this.atualizarLabelEstadoBT(state));
   }
 
-  ionViewDidEnter() {
-    this.atualizarLabelEstadoBT();
-
-    //debugar
+  ionViewDidEnter() {    
     this.verificarPermissoes();
-
-    this.diagCtrl.registerBluetoothStateChangeHandler(this.atualizarLabelEstadoBT);
   }
 
   /*
@@ -56,62 +52,50 @@ export class BaixarArquivoPage {
   */
 
   verificarPermissoes() {
-
-    if (!this.verificarSePossuiPermissoes()) {
-      const confirm = this.alertCtrl.create({
-        title: "Permissões necessárias",
-        message:
-          "Para obter o Arquivo do Arduino, é necessário conceder permissões de Acesso a Localização e a Memória. \nConceda-as a seguir para continuar",
-        buttons: [
-          {
-            text: "Ok",
-            handler: () => { this.solicitarPermissoes(); }
-          }
-        ]
-      });
-      confirm.present();
-    }
-
-    this.diagCtrl.isBluetoothAvailable().then(
-      available => {
-        this.atualizarLabelEstadoBT();
-      },
-      unavailable => {
-        const confirm = this.alertCtrl.create({
-          title: "Ativar Bluetooth?",
-          message:
-            "Para obter o Arquivo do Arduino, é necessário ativar o Bluetooth. \nDeseja ativar o Bluetooth?",
-          buttons: [
-            {
-              text: "Não",
-              handler: () => {
-                this.mostrarToast("Não é possível obter o arquivo sem o Bluetooth", 3000);
+    this.diagCtrl.getBluetoothState().then(
+      state => {
+        if (state == this.diagCtrl.bluetoothState.POWERED_OFF){
+          const confirm = this.alertCtrl.create({
+            title: "Ativar Bluetooth?",
+            message:
+              "Para obter o Arquivo do Arduino, é necessário ativar o Bluetooth. \nDeseja ativar o Bluetooth?",
+            buttons: [
+              {
+                text: "Não",
+                handler: () => {
+                  this.mostrarToast("Não é possível obter o arquivo sem o Bluetooth", 3000);
+                }
+              },
+              {
+                text: "Sim",
+                handler: () => {
+                  const loader = this.loadingCtrl.create({
+                    content: "Ativando Bluetooth..."
+                  });
+                  loader.present().then(result => {
+                    this.diagCtrl.setBluetoothState(true).then(result => { loader.dismiss(); });
+                  });
+                }
               }
-            },
-            {
-              text: "Sim",
-              handler: () => {
-                const loader = this.loadingCtrl.create({
-                  content: "Ativando Bluetooth..."
-                });
-                loader.present().then(result => {
-                  this.diagCtrl.setBluetoothState(true).then(result => { loader.dismiss(); });
-                });
-              }
-            }
-          ]
-        });
-        confirm.present();
+            ]
+          });
+          confirm.present();
+        }
+        else if (state == this.diagCtrl.bluetoothState.UNAUTHORIZED) {
+          this.diagCtrl.requestBluetoothAuthorization().then(result => this.mostrarToast(result, 3000));
+        }
+        else if (state == this.diagCtrl.bluetoothState.UNSUPPORTED) {
+          this.mostrarToast("Bluetooth não suportado nesse dispositivo", 3000);
+        }        
+        else if (state == this.diagCtrl.bluetoothState.POWERED_ON) {
+          this.mostrarToast("Bluetooth já ativado", 3000);
+        }
+
+        this.solicitarPermissoes();
+        this.atualizarLabelEstadoBT(state);
       });
   }
 
-  verificarSePossuiPermissoes(): boolean {
-    if (this.diagCtrl.isLocationAuthorized().then(result => { return true }, error => { return false }) &&
-      (this.diagCtrl.isExternalStorageAuthorized().then(result => { return true }, error => { return false })))
-      return true;
-    else
-      return false;
-  }
   solicitarPermissoes() {
     this.diagCtrl
       .requestRuntimePermissions([
@@ -120,7 +104,7 @@ export class BaixarArquivoPage {
         this.diagCtrl.permission.WRITE_EXTERNAL_STORAGE
       ])
       .then(
-        result => this.mostrarToast("Permissões concedidas", 3000),
+        result => console.log("Permissões concedidas"),
         rejection =>
           this.mostrarToast(
             "É necessário conceder as permissões para obter o arquivo",
@@ -130,48 +114,24 @@ export class BaixarArquivoPage {
   }
 
   abrirConfiguracoesBluetooth() {
-    //Solicitar permissoes ao acessar tela (nao solicitar do bluetooth, apenas ativar ele)
-    /* this.diagCtrl
-       .requestRuntimePermissions([
-         this.diagCtrl.permission.ACCESS_COARSE_LOCATION,
-         this.diagCtrl.permission.READ_EXTERNAL_STORAGE,
-         this.diagCtrl.permission.WRITE_EXTERNAL_STORAGE
-       ])
-       .then(
-         result => {
-           this.mostrarToast("PERMISSOES" + result, 3000);
-         },
-         rejection => this.mostrarToast("rejection2" + rejection, 3000)
-       );
- */
-    // this.diagCtrl.requestLocationAuthorization().then(
-    //   result => {
-    //     this.mostrarToast("reqLocAuth " + result, 3000);
-    //   },
-    //   rejection => this.mostrarToast("rejection2" + rejection, 3000)
-    //  );
+  this.diagCtrl.switchToBluetoothSettings();    
   }
 
-  atualizarLabelEstadoBT() {
-    if (this.plataformaCordova) {
-      this.diagCtrl
-        .getBluetoothState()
-        .then(state => {
-          switch (state) {
-            case this.diagCtrl.bluetoothState.POWERED_ON:
-              this.estadoBluetooth = "Ligado";
-              break;
-            case this.diagCtrl.bluetoothState.POWERED_OFF:
-              this.estadoBluetooth = "Desligado";
-              break;
-            case this.diagCtrl.bluetoothState.POWERING_ON:
-              this.estadoBluetooth = "Ligando";
-              break;
-            default:
-              this.estadoBluetooth = "???";
-          }
-        })
-        .catch(e => console.error(e));
+  atualizarLabelEstadoBT(state: String) {
+    if (this.plataformaCordova) {      
+      switch (state) {
+        case this.diagCtrl.bluetoothState.POWERED_ON:
+          this.estadoBluetooth = "Ligado";
+          break;
+        case this.diagCtrl.bluetoothState.POWERED_OFF:
+          this.estadoBluetooth = "Desligado";
+          break;
+        case this.diagCtrl.bluetoothState.POWERING_ON:
+          this.estadoBluetooth = "Ligando";
+          break;
+        default:
+          this.estadoBluetooth = "???";
+      }
     } else this.estadoBluetooth = "Web";
   }
 
