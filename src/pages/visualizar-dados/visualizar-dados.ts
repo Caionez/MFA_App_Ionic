@@ -1,13 +1,8 @@
 import { Component } from "@angular/core";
-import { RegistroAgua, DadosResumidosAgua } from "../../model/registro-agua";
-import {
-  LoadingController,
-  ModalController,
-  Platform,
-  ViewController
-} from "ionic-angular";
-
+import { LoadingController, ModalController, Platform } from "ionic-angular";
 import { File } from "@ionic-native/file";
+import { RegistroAgua, DadosResumidosAgua } from "../../model/registro-agua";
+import { FiltrarDados } from "../modal-filtro/modal-filtro";
 
 @Component({
   selector: "visualizar-dados",
@@ -188,12 +183,13 @@ export class VisualizarDadosPage {
 
     let profileModal = this.modalCtrl.create(FiltrarDados);
     profileModal.onDidDismiss(data => {
+      if (data) {
+        if (data.DataInicial)
+          this.filtro.DataInicial = Date.parse(data.DataInicial);
+        if (data.DataFinal)
+          this.filtro.DataFinal = Date.parse(data.DataFinal);
+      }
       
-      if (data && data.DataInicial)      
-        this.filtro.DataInicial = Date.parse(data.DataInicial);
-      if (data && data.DataFinal)
-        this.filtro.DataFinal = Date.parse(data.DataFinal);
-        
       this.preencherDadosFiltrados(this.filtro);
       this.calcularValoresResumidos(this.dadosFiltrados);
       loading.dismiss();
@@ -273,57 +269,5 @@ export class VisualizarDadosPage {
 2018-09-21T02:00;8.70;8.70;8.71;8.72;8.73;8.70;8.70;8.71;8.72;8.73;8.70;8.70;8.71;8.72;0.1;0.2;0.1;8.92;8.93;8.94;8.95;8.96;8.97;8.98;8.99;8.100;8.101;8.102;8.103;8.104;8.105;8.106;8.107;8.108;8.109;8.110;8.111;8.112;8.113;8.114;8.115;8.116;8.117;8.118;8.119;8.120;8.121;8.122;8.123;8.124;8.125;8.126;8.127;8.128;8.129;8.130;8.131;8.132;8.133;8.134
 2018-09-21T03:00;8.70;8.70;8.71;8.72;8.73;8.70;8.70;8.71;8.72;8.73;8.70;8.70;8.71;8.72;0.1;0.2;0.1;8.76;8.77;8.78;8.79;8.80;8.81;8.82;8.83;8.84;8.85;8.86;8.87;8.88;8.89;8.90;8.91;8.92;8.93;8.94;8.95;8.96;8.97;8.98;8.99;8.100;8.101;8.102;8.103;8.104;8.105;8.106;8.107;8.108;8.109;8.110;8.111;8.112;8.113;8.114;8.115;8.116;8.117;8.118
 `;
-  }
-}
-
-@Component({
-  template: `
-  <ion-header>
-  <ion-toolbar>
-    <ion-buttons left>  
-      <button ion-button (click)="dismiss()">        
-        <ion-icon name="close"></ion-icon>
-      </button>
-    </ion-buttons>  
-    <ion-title>
-      Filtrar Dados
-    </ion-title>    
-  </ion-toolbar>
-</ion-header>
-<ion-content padding>
-<ion-row>
-  <ion-item-divider>
-      <b>PERÍODO</b>
-  </ion-item-divider>
-</ion-row>
-<ion-row>
-<ion-col>
-  <ion-item>
-    <ion-label floating>De</ion-label>
-    <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataInicial"></ion-datetime>
-  </ion-item>
-</ion-col>
-<ion-col>
-  <ion-item>
-    <ion-label floating>Até</ion-label>
-    <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataFinal"></ion-datetime>
-  </ion-item>
-</ion-col>
-</ion-row>
-</ion-content>`
-})
-export class FiltrarDados {
-  filtro: { DataInicial: Date; DataFinal: Date };
-
-  constructor(public viewCtrl: ViewController) {
-    this.filtro = {
-      DataInicial: new Date(),
-      DataFinal: new Date()
-    };
-  }
-
-  dismiss() {
-    let data = this.filtro;
-    this.viewCtrl.dismiss(data);
   }
 }

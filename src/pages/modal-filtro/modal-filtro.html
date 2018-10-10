@@ -1,0 +1,35 @@
+<ion-header>
+    <ion-toolbar>
+      <ion-buttons left>  
+        <button ion-button (click)="dismiss()">        
+          <ion-icon name="close"></ion-icon>
+        </button>
+      </ion-buttons>  
+      <ion-title>
+        Filtrar Dados
+      </ion-title>    
+    </ion-toolbar>
+  </ion-header>
+  <ion-content padding>
+  <ion-row>
+    <ion-item-divider>
+        <b>PERÍODO</b>
+    </ion-item-divider>
+  </ion-row>
+  <ion-row>
+  <ion-col>
+    <ion-item>
+      <ion-label floating>De</ion-label>
+      <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataInicial"></ion-datetime>
+    </ion-item>
+  </ion-col>
+  <ion-col>
+    <ion-item>
+      <ion-label floating>Até</ion-label>
+      <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataFinal"></ion-datetime>
+    </ion-item>
+  </ion-col>
+  </ion-row>
+  <ion-row>
+  </ion-row>
+  </ion-content>

@@ -5,7 +5,8 @@ import { MyApp } from './app.component';
 import { ChartsModule } from 'ng2-charts';
 
 import { MenuPrincipalPage } from './../pages/menu-principal/menu-principal';
-import { VisualizarDadosPage, FiltrarDados } from './../pages/visualizar-dados/visualizar-dados';
+import { VisualizarDadosPage } from './../pages/visualizar-dados/visualizar-dados';
+import { FiltrarDados } from './../pages/modal-filtro/modal-filtro'
 import { BaixarArquivoPage } from './../pages/baixar-arquivo/baixar-arquivo';
 
 import { StatusBar } from '@ionic-native/status-bar';
