@@ -11,14 +11,12 @@ import { BaixarArquivoPage } from './../pages/baixar-arquivo/baixar-arquivo';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-import { BaixarArquivoSerialPage } from '../pages/baixar-arquivo-serial/baixar-arquivo-serial';
 
 @NgModule({
   declarations: [
     MyApp,
     MenuPrincipalPage,
     BaixarArquivoPage,
-    BaixarArquivoSerialPage,
     VisualizarDadosPage,
     FiltrarDados
   ],
@@ -33,7 +31,6 @@ import { BaixarArquivoSerialPage } from '../pages/baixar-arquivo-serial/baixar-a
     MenuPrincipalPage,
     VisualizarDadosPage,
     BaixarArquivoPage,
-    BaixarArquivoSerialPage,
     FiltrarDados
   ],
   providers: [

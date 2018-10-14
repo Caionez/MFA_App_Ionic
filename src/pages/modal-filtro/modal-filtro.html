@@ -1,35 +1,53 @@
 <ion-header>
-    <ion-toolbar>
-      <ion-buttons left>  
-        <button ion-button (click)="dismiss()">        
-          <ion-icon name="close"></ion-icon>
-        </button>
-      </ion-buttons>  
-      <ion-title>
-        Filtrar Dados
-      </ion-title>    
-    </ion-toolbar>
-  </ion-header>
-  <ion-content padding>
+  <ion-toolbar>
+    <ion-buttons left>
+      <button ion-button (click)="dismiss()">
+        <ion-icon name="close"></ion-icon>
+      </button>
+    </ion-buttons>
+    <ion-title>
+      Filtrar Dados
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content padding>
   <ion-row>
     <ion-item-divider>
-        <b>PERÍODO</b>
+      <b style="color: #424242;">Período</b>
     </ion-item-divider>
   </ion-row>
   <ion-row>
-  <ion-col>
-    <ion-item>
-      <ion-label floating>De</ion-label>
-      <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataInicial"></ion-datetime>
-    </ion-item>
-  </ion-col>
-  <ion-col>
-    <ion-item>
-      <ion-label floating>Até</ion-label>
-      <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataFinal"></ion-datetime>
-    </ion-item>
-  </ion-col>
+    <ion-col>
+      <ion-item>
+        <ion-label floating>De</ion-label>
+        <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataInicial"></ion-datetime>
+      </ion-item>
+    </ion-col>
+    <ion-col>
+      <ion-item>
+        <ion-label floating>Até</ion-label>
+        <ion-datetime displayFormat="DD/MM/YYYY - HH:mm" [(ngModel)]="filtro.DataFinal"></ion-datetime>
+      </ion-item>
+    </ion-col>
   </ion-row>
+  <!-- <ion-row *ngIf="filtro != undefined && filtro.DataInicial != '' && filtro.DataFinal != ''">
+    <ion-item-divider>
+      <b style="color: #424242;">Filtro aplicado:</b>
+    </ion-item-divider>
+    <ion-item no-lines>{{filtrosAplicados}}</ion-item>
+  </ion-row> -->
   <ion-row>
+    <ion-col>
+      <button ion-button full icon-start color="secondary" (click)="aplicarFiltro()">
+        <ion-icon name="checkmark"></ion-icon>
+        Aplicar Filtro
+      </button>
+    </ion-col>
+    <ion-col>
+      <button ion-button full icon-start color="danger" (click)="limparFiltro()">
+        <ion-icon name="trash"></ion-icon>
+        Limpar Filtro
+      </button>
+    </ion-col>
   </ion-row>
-  </ion-content>
+</ion-content>
