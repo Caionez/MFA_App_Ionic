@@ -10,7 +10,7 @@ import { FiltrarDados } from "../modal-filtro/modal-filtro";
 })
 export class VisualizarDadosPage {
   readonly padraoData: { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" };
-  
+
   plataformaCordova: boolean;
   dadosLidos: boolean;
   filtro: any;
@@ -24,9 +24,10 @@ export class VisualizarDadosPage {
   exibirGraficoDia: boolean;
 
   parametros: {
-    fluxoTotal: number;
-    maiorFluxo: RegistroAgua;
-    menorFluxo: RegistroAgua;
+    fluxoTotal: number,
+    maiorFluxo: RegistroAgua,
+    menorFluxo: RegistroAgua,
+    horarioMaiorConsumo: RegistroAgua
   };
 
   file = new File();
@@ -50,13 +51,13 @@ export class VisualizarDadosPage {
     });
 
     loading.present();
-    
+
     if (this.plataformaCordova) {
       this.file
         .readAsText(this.file.externalRootDirectory, "dados.csv")
         .then(streamArquivo => {
           linhasArquivo = streamArquivo.split("\n");
-          this.dados = this.montarObjetosDados(linhasArquivo);
+          this.dados = this.dadosFiltrados = this.montarObjetosDados(linhasArquivo);
           this.dadosLidos = true;
 
           this.calcularValoresResumidos(this.dados);
@@ -64,11 +65,12 @@ export class VisualizarDadosPage {
     } else {
       linhasArquivo = this.arquivoMock().split("\n");
       this.dados = this.montarObjetosDados(linhasArquivo);
+      this.dadosFiltrados = this.dados;
       this.dadosLidos = true;
 
       this.calcularValoresResumidos(this.dados);
     }
-    
+
     loading.dismiss();
   }
 
@@ -93,9 +95,9 @@ export class VisualizarDadosPage {
         });
       });
 
-    this.menorDataEncontrada = arrayDados[0].dataRegistro.toLocaleDateString("pt-br",this.padraoData);
+    this.menorDataEncontrada = arrayDados[0].dataRegistro.toLocaleDateString("pt-br", this.padraoData);
     this.maiorDataEncontrada = arrayDados[arrayDados.length - 1].dataRegistro.toLocaleDateString("pt-br", this.padraoData);
-    
+
     return arrayDados;
   }
 
@@ -103,7 +105,8 @@ export class VisualizarDadosPage {
     let fluxoTotal: number = 0;
     let maiorFluxo: RegistroAgua = arrayDados[0];
     let menorFluxo: RegistroAgua = arrayDados[0];
-
+    let horarioMaiorConsumo: RegistroAgua = arrayDados[0];
+    
     arrayDados.forEach(dado => {
       fluxoTotal += dado.valorRegistro;
       maiorFluxo =
@@ -112,7 +115,9 @@ export class VisualizarDadosPage {
         menorFluxo.valorRegistro >= dado.valorRegistro ? dado : menorFluxo;
     });
 
-    this.parametros = { fluxoTotal, maiorFluxo, menorFluxo };
+    horarioMaiorConsumo = this.calcularMaiorHoraConsumo(arrayDados);
+
+    this.parametros = { fluxoTotal, maiorFluxo, menorFluxo, horarioMaiorConsumo };
   }
 
   mostrarGrafico(formato) {
@@ -142,6 +147,7 @@ export class VisualizarDadosPage {
         dadosResumidos.push(new DadosResumidosAgua(grupoRegistros));
         //Limpando o array pra formar um novo grupo
         grupoRegistros = new Array<RegistroAgua>();
+        grupoRegistros.push(dado);
       }
     });
 
@@ -189,7 +195,7 @@ export class VisualizarDadosPage {
         if (data.DataFinal)
           this.filtro.DataFinal = Date.parse(data.DataFinal);
       }
-      
+
       this.preencherDadosFiltrados(this.filtro);
       this.calcularValoresResumidos(this.dadosFiltrados);
       loading.dismiss();
@@ -207,6 +213,30 @@ export class VisualizarDadosPage {
       )
         this.dadosFiltrados.push(registro);
     });
+  }
+
+  calcularMaiorHoraConsumo(dadosAgua: Array<RegistroAgua>): RegistroAgua {
+    let dadosPorHorario = this.agruparDados(dadosAgua, 60);    
+    let horariosConsumo = new Array<RegistroAgua>(24);
+
+
+    dadosPorHorario.forEach((registro, index)  => {      
+      if (index < 24) {
+        horariosConsumo[index] = new RegistroAgua(registro.dataInicialRegistro, registro.valorTotal);
+      } else {
+        horariosConsumo[index % 24] = new RegistroAgua(horariosConsumo[index % 24].dataRegistro, horariosConsumo[index % 24].valorRegistro + registro.valorTotal);
+      }
+    });
+
+    let horarioMaiorConsumo = horariosConsumo[0];
+
+    horariosConsumo.forEach(registro => {
+      if (registro.valorRegistro > horarioMaiorConsumo.valorRegistro) {
+        horarioMaiorConsumo = registro;
+      }
+    });
+    
+    return horarioMaiorConsumo;
   }
 
   public lineChartData: Array<any>; /* = [

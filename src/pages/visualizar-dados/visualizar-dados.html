@@ -56,6 +56,10 @@
         <p>Em {{parametros.menorFluxo.dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric',
           day: 'numeric', hour: '2-digit', minute: '2-digit' })}}</p>
       </ion-item>
+      <ion-item>
+        <h2><b>Horário de Maior Consumo: {{parametros.horarioMaiorConsumo.dataRegistro.toLocaleTimeString('pt-br', {hour: '2-digit'})}} h</b></h2>
+        <p>Fluxo total: {{parametros.menorFluxo.valorRegistro.toFixed(3)}} litros</p>
+      </ion-item>
     </ion-list>
 
 
