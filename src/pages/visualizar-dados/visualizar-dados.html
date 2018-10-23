@@ -53,6 +53,10 @@
         <p>{{parametros.fluxoTotal.toFixed(3)}} litros</p>
       </ion-item>
       <ion-item>
+        <h2><b>Consumo médio no período:</b></h2>
+        <p>{{parametros.mediaConsumo.toFixed(3)}} litros por minuto</p>
+      </ion-item>
+      <ion-item>
         <h2><b>Maior fluxo: {{parametros.maiorFluxo.valorRegistro.toFixed(3)}} litros</b></h2>
         <p>Em: {{parametros.maiorFluxo.dataRegistro.toLocaleDateString('pt-br', { year: 'numeric', month: 'numeric',
           day: 'numeric', hour: '2-digit', minute: '2-digit' })}}</p>

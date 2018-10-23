@@ -28,6 +28,7 @@ export class VisualizarDadosPage {
     fluxoTotal: number,
     maiorFluxo: RegistroAgua,
     menorFluxo: RegistroAgua,
+    mediaConsumo: number,
     horarioMaiorConsumo: RegistroAgua
   };
 
@@ -103,6 +104,7 @@ export class VisualizarDadosPage {
     let maiorFluxo: RegistroAgua = arrayDados[0];
     let menorFluxo: RegistroAgua = arrayDados[0];
     let horarioMaiorConsumo: RegistroAgua = arrayDados[0];
+    let mediaConsumo: number = 0;
 
     arrayDados.forEach(dado => {
       fluxoTotal += dado.valorRegistro;
@@ -112,9 +114,10 @@ export class VisualizarDadosPage {
         menorFluxo.valorRegistro >= dado.valorRegistro ? dado : menorFluxo;
     });
 
+    mediaConsumo = fluxoTotal / arrayDados.length;
     horarioMaiorConsumo = this.calcularMaiorHoraConsumo(arrayDados);
 
-    this.parametros = { fluxoTotal, maiorFluxo, menorFluxo, horarioMaiorConsumo };
+    this.parametros = { fluxoTotal, maiorFluxo, menorFluxo, mediaConsumo, horarioMaiorConsumo };
   }
 
   mostrarGrafico(formato) {
