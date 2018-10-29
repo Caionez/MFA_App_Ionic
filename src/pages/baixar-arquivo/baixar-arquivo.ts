@@ -91,10 +91,7 @@ export class BaixarArquivoPage {
         else if (state == this.diagCtrl.bluetoothState.UNSUPPORTED) {
           this.mostrarToast("Bluetooth não suportado nesse dispositivo", 3000);
         }        
-        else if (state == this.diagCtrl.bluetoothState.POWERED_ON) {
-          this.mostrarToast("Bluetooth já ativado", 3000);
-        }
-
+        
         this.solicitarPermissoes();
         this.atualizarLabelEstadoBT(state);
       });
@@ -157,41 +154,20 @@ export class BaixarArquivoPage {
         console.log(JSON.stringify(peripheralData));
         loader.dismiss();
         this.conectadoArduino = true;
-
       },
-      peripheralData => {
-        console.log("Desconectado");
+      error => {
+        console.log("Desconectado: " + error);
         loader.dismiss();
         this.conectadoArduino = false;
         this.mostrarToast("Não foi possível conectar ao Arduino", 3000);
       }
     );
-
-    /*
-    this.objBLE.scan(['0000ffe0-0000-1000-8000-00805f9b34fb'], 10).subscribe(device =>
-      {
-        console.log(JSON.stringify(device));
-      });
-      */
   }
 
   transferirArquivo() {
-    //Enviar para arduino ate onde já foi transferido
-    /*    this.ble
-          .write(
-            "00:15:83:30:BA:04",
-            "0000ffe0-0000-1000-8000-00805f9b34fb",
-            "0000ffe1-0000-1000-8000-00805f9b34fb",
-    
-            this.stringToBytes("ultimalinha")
-          )
-          .then
-          //Iniciar a transmissão a partir daqui
-          ();*/
     this.streamBluetooth = "";
     const loader = this.loadingCtrl.create({
-      content: "Transferindo arquivo...",
-      duration: 15000
+      content: "Pressione o botão no Arduino para iniciar..."
     });
     loader.present();
 
@@ -202,16 +178,18 @@ export class BaixarArquivoPage {
         "0000ffe1-0000-1000-8000-00805f9b34fb"
       )
       .subscribe(result => {
-        console.log(this.bytesToString(result));
-
+        console.log(this.bytesToString(result));        
         this.streamBluetooth += this.bytesToString(result);
         
         if (this.verificarArquivoCompleto()) {
-
-          loader.dismiss();
-
+          loader.setContent("Salvando Arquivo...");
           this.salvarStreamEmArquivo();
-        }        
+          loader.dismiss();
+        }
+        else {
+          loader.setContent("Transferindo Arquivo...");
+        }
+        
       }, error => this.mostrarToast("Erro ao transferir arquivo", 3000));
   }
 
@@ -224,23 +202,28 @@ export class BaixarArquivoPage {
   }
 
   desconectar() {
+    const loader = this.loadingCtrl.create({
+      content: "Desconectando..."      
+    });
+    loader.present();
+    
     this.ble
       .disconnect("00:15:83:30:BA:04")
-      .then(response => console.log("Desconectado pelo botão"));
+      .then(response => {
+        console.log("Desconectado pelo botão");
+        this.conectadoArduino = false;
+        loader.dismiss();
+      });
   }
 
   verificarArquivoCompleto(): boolean {
-    if (
-      this.streamBluetooth.indexOf("#FNA#") != -1  &&
+    if (this.streamBluetooth.indexOf("#FNA#") != -1  &&
       this.streamBluetooth.indexOf("#EOF#") != -1 &&
-      this.streamBluetooth.indexOf("#SOF#") != -1
-    ) {
-      this.mostrarToast("Arquivo completo", 1000)
+      this.streamBluetooth.indexOf("#SOF#") != -1) {
+      this.mostrarToast("Transmissão completa", 1000)
       return true;
-    } else {
-      //this.mostrarToast("Arquivo incompleto", 1000)
-      return false;
-    }
+    } 
+    else return false;
   }
 
   bytesToString(buffer) {
@@ -277,10 +260,12 @@ export class BaixarArquivoPage {
           "Arquivo '" + nomeArquivo + "' transferido com sucesso!",
           3000
         );
+        this.streamBluetooth = "";
       })
       .catch(result => {
         console.log("Erro ao transferir arquivo!" + JSON.stringify(result));
         this.mostrarToast("Erro ao transferir arquivo!", 3000);
+        this.streamBluetooth = "";
       });
   }
 
