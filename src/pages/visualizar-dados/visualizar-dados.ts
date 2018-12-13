@@ -28,8 +28,8 @@ export class VisualizarDadosPage {
     fluxoTotal: number,
     maiorFluxo: RegistroAgua,
     menorFluxo: RegistroAgua,
-    mediaConsumo: number,
-    horarioMaiorConsumo: RegistroAgua
+    mediaFluxo: number,
+    horarioMaiorFluxo: RegistroAgua
   };
 
   file = new File();
@@ -103,8 +103,8 @@ export class VisualizarDadosPage {
     let fluxoTotal: number = 0;
     let maiorFluxo: RegistroAgua = arrayDados[0];
     let menorFluxo: RegistroAgua = arrayDados[0];
-    let horarioMaiorConsumo: RegistroAgua = arrayDados[0];
-    let mediaConsumo: number = 0;
+    let horarioMaiorFluxo: RegistroAgua = arrayDados[0];
+    let mediaFluxo: number = 0;
 
     arrayDados.forEach(dado => {
       fluxoTotal += dado.valorRegistro;
@@ -114,10 +114,10 @@ export class VisualizarDadosPage {
         menorFluxo.valorRegistro >= dado.valorRegistro ? dado : menorFluxo;
     });
 
-    mediaConsumo = fluxoTotal / arrayDados.length;
-    horarioMaiorConsumo = this.calcularMaiorHoraConsumo(arrayDados);
+    mediaFluxo = fluxoTotal / arrayDados.length;
+    horarioMaiorFluxo = this.calcularMaiorHoraFluxo(arrayDados);
 
-    this.parametros = { fluxoTotal, maiorFluxo, menorFluxo, mediaConsumo, horarioMaiorConsumo };
+    this.parametros = { fluxoTotal, maiorFluxo, menorFluxo, mediaFluxo, horarioMaiorFluxo };
   }
 
   mostrarGrafico(formato) {
@@ -228,28 +228,28 @@ export class VisualizarDadosPage {
     }
   }
 
-  calcularMaiorHoraConsumo(dadosAgua: Array<RegistroAgua>): RegistroAgua {
+  calcularMaiorHoraFluxo(dadosAgua: Array<RegistroAgua>): RegistroAgua {
     let dadosPorHorario = this.agruparDados(dadosAgua, 60);
-    let horariosConsumo = new Array<RegistroAgua>(24);
+    let horariosFluxo = new Array<RegistroAgua>(24);
 
 
     dadosPorHorario.forEach((registro, index) => {
       if (index < 24) {
-        horariosConsumo[index] = new RegistroAgua(registro.dataInicialRegistro, registro.valorTotal);
+        horariosFluxo[index] = new RegistroAgua(registro.dataInicialRegistro, registro.valorTotal);
       } else {
-        horariosConsumo[index % 24] = new RegistroAgua(horariosConsumo[index % 24].dataRegistro, horariosConsumo[index % 24].valorRegistro + registro.valorTotal);
+        horariosFluxo[index % 24] = new RegistroAgua(horariosFluxo[index % 24].dataRegistro, horariosFluxo[index % 24].valorRegistro + registro.valorTotal);
       }
     });
 
-    let horarioMaiorConsumo = horariosConsumo[0];
+    let horarioMaiorFluxo = horariosFluxo[0];
 
-    horariosConsumo.forEach(registro => {
-      if (registro.valorRegistro > horarioMaiorConsumo.valorRegistro) {
-        horarioMaiorConsumo = registro;
+    horariosFluxo.forEach(registro => {
+      if (registro.valorRegistro > horarioMaiorFluxo.valorRegistro) {
+        horarioMaiorFluxo = registro;
       }
     });
 
-    return horarioMaiorConsumo;
+    return horarioMaiorFluxo;
   }
 
   public lineChartData: Array<any>; /* = [
